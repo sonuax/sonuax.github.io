@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ФотоМайстер — React</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <!-- React 18 + ReactDOM -->
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+  <!-- Babel (JSX transform) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useCallback } = React;
+
+    /* ===================================================================
+       DATA
+    =================================================================== */
+    
+    const ROUTES = { home: 'home', lessons: 'lessons', gallery: 'gallery', progress: 'progress', comments: 'comments' };
+
+    /* ===================================================================
+       ROUTER (custom hash-based, no external lib needed)
+    =================================================================== */
+
+
+    /* ===================================================================
+       GLOBAL STATE (lifted to App)
+    =================================================================== */
+    // completedLessons: Set of lesson ids user has marked done
+    // gallery: array of photo objects
+    // comments: array of comment objects
+    // photoCount: number of photos uploaded by user
+
+    /* ===================================================================
+       COMPONENTS
+    =================================================================== */
+
+    // ----- AppHeader -----
+    
+
+    // ----- AppFooter -----
+    
+
+    // ----- LessonCard component -----
+    function LessonCard({ lesson, index, isCompleted, onToggleComplete }) {
+      const [expanded, setExpanded] = useState(false);
+      const borderStyle = lesson.difficulty === 'hard'
+        ? 'rgba(232,124,110,0.2)' : lesson.difficulty === 'medium'
+        ? 'rgba(232,201,110,0.15)' : undefined;
+
+      return (
+        <article className="lesson-card" style={borderStyle ? {borderColor: borderStyle} : {}}>
+          <div className="lesson-thumb">
+            <img src={lesson.img} alt={lesson.title} loading="lazy" />
+            <span className="lesson-badge">{lesson.type} • {lesson.duration}</span>
+            {isCompleted && <span className="lesson-done-badge">✓ Пройдено</span>}
+          </div>
+          <div className="lesson-body" style={index % 2 !== 0 ? {background:'var(--surface2)'} : {}}>
+            <div className="lesson-meta">
+              <span>📷 {lesson.module_label}</span>
+              <span>⏱ {lesson.duration}</span>
+            </div>
+            <h3>{lesson.title}</h3>
+            <p>{lesson.desc}</p>
+            <button className="lesson-expand-btn" onClick={() => setExpanded(e => !e)}>
+              <span>{expanded ? '▾' : '▸'}</span>
+              <span>{expanded ? 'Приховати' : 'Детальніше'}</span>
+            </button>
+            <div className={`lesson-full${expanded ? ' open' : ''}`}>{lesson.full}</div>
+          </div>
+          <div className="lesson-footer">
+            <span className={`difficulty ${lesson.difficulty}`}>{lesson.diffLabel}</span>
+            <button
+              className={`mark-done-btn ${isCompleted ? 'done' : 'undone'}`}
+              onClick={() => onToggleComplete(lesson.id)}
+            >
+              {isCompleted ? '✓ Пройдено' : 'Відмітити'}
+            </button>
+          </div>
+        </article>
+      );
+    }
+
+    // ----- LessonsPage -----
+    
+    // ----- GalleryItem component -----
+
+    // ----- GalleryPage -----
+    
+
+    // ----- ProgressPage -----
+    
+
+    // ----- CommentsPage -----
+    
+
+    // ----- HomePage -----
+    
+
+    /* ===================================================================
+       APP (root component — manages global state + routing)
+    =================================================================== */
+    
+
+    // ===== MOUNT =====
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
