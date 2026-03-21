@@ -7,7 +7,7 @@ const admin   = require('firebase-admin');
 // serviceAccountKey.json — завантажити з:
 // Firebase Console → Project Settings → Service Accounts → Generate new private key
 // ============================================================
-const serviceAccount = require('./serviceAccountKey.json');
+const serviceAccount = JSON.parse(process.env.SERVICE_ACCOUNT_KEY);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
