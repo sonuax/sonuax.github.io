@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ФотоМайстер — React</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <!-- React 18 + ReactDOM -->
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+  <!-- Babel (JSX transform) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    /* ===== CSS VARIABLES ===== */
+    :root {
+      --bg: #0d0d0d;
+      --surface: #161616;
+      --surface2: #1e1e1e;
+      --border: #2a2a2a;
+      --accent: #c9a96e;
+      --accent2: #e8c98a;
+      --text: #f0ece4;
+      --muted: #888880;
+      --success: #6db87a;
+      --error: #e87c6e;
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-body: 'DM Sans', sans-serif;
+      --radius: 4px;
+      --transition: 0.3s ease;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--font-body); background: var(--bg); color: var(--text); line-height: 1.6; font-size: 16px; }
+    img { max-width: 100%; display: block; }
+    a { color: inherit; text-decoration: none; }
+    ul { list-style: none; }
+
+    /* ===== HEADER ===== */
+    header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(13,13,13,0.96); backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    .header-inner {
+      max-width: 1200px; margin: 0 auto; padding: 0 2rem;
+      display: flex; align-items: center; justify-content: space-between; height: 68px;
+    }
+    .logo { font-family: var(--font-display); font-size: 1.5rem; color: var(--accent); cursor: pointer; }
+    .logo span { color: var(--text); font-style: italic; }
+    nav ul { display: flex; gap: 0.25rem; align-items: center; }
+    nav ul li button, nav ul li a {
+      display: block; padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 500;
+      letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted);
+      border-radius: var(--radius); transition: color var(--transition), background var(--transition);
+      background: none; border: none; cursor: pointer; font-family: var(--font-body);
+    }
+    nav ul li button:hover, nav ul li button.active { color: var(--accent); background: rgba(201,169,110,0.08); }
+    .nav-cta { background: var(--accent) !important; color: var(--bg) !important; font-weight: 500 !important; border-radius: var(--radius); }
+    .nav-cta:hover { background: var(--accent2) !important; }
+    .hamburger {
+      display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px;
+      background: none; border: none;
+    }
+    .hamburger span { display: block; width: 24px; height: 2px; background: var(--text); transition: var(--transition); }
+
+    /* ===== HERO ===== */
+    .hero {
+      position: relative; min-height: 85vh; display: flex; align-items: center;
+      overflow: hidden; background: var(--bg);
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 70% 40%, rgba(201,169,110,0.07) 0%, transparent 60%),
+                  radial-gradient(ellipse 40% 40% at 20% 80%, rgba(201,169,110,0.04) 0%, transparent 50%);
+    }
+    .hero-img-wrap { position: absolute; right: 0; top: 0; bottom: 0; width: 55%; overflow: hidden; }
+    .hero-img-wrap img { width: 100%; height: 100%; object-fit: cover; opacity: 0.45; filter: grayscale(30%); }
+    .hero-img-wrap::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(90deg, var(--bg) 0%, rgba(13,13,13,0.3) 60%, transparent 100%);
+    }
+    .hero-content { position: relative; z-index: 2; max-width: 1200px; margin: 0 auto; padding: 4rem 2rem; width: 100%; }
+    .hero-tag {
+      display: inline-block; font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--accent); border: 1px solid rgba(201,169,110,0.4); padding: 0.35rem 0.85rem;
+      border-radius: 2px; margin-bottom: 1.5rem; animation: fadeUp 0.6s ease both;
+    }
+    .hero h1 {
+      font-family: var(--font-display); font-size: clamp(2.8rem, 6vw, 5.5rem);
+      line-height: 1.1; font-weight: 700; max-width: 600px; animation: fadeUp 0.7s 0.1s ease both;
+    }
+    .hero h1 em { font-style: italic; color: var(--accent); }
+    .hero p {
+      margin-top: 1.5rem; max-width: 460px; color: var(--muted); font-size: 1.05rem;
+      line-height: 1.7; animation: fadeUp 0.7s 0.2s ease both;
+    }
+    .hero-actions { margin-top: 2.5rem; display: flex; gap: 1rem; flex-wrap: wrap; animation: fadeUp 0.7s 0.3s ease both; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.85rem 1.75rem;
+      font-size: 0.9rem; font-weight: 500; letter-spacing: 0.04em; border-radius: var(--radius);
+      cursor: pointer; transition: var(--transition); border: none; font-family: var(--font-body);
+    }
+    .btn-primary { background: var(--accent); color: var(--bg); }
+    .btn-primary:hover { background: var(--accent2); transform: translateY(-1px); }
+    .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-sm { padding: 0.5rem 1rem; font-size: 0.8rem; }
+    .hero-stats { margin-top: 3rem; display: flex; gap: 2.5rem; animation: fadeUp 0.7s 0.4s ease both; }
+    .hero-stats strong { display: block; font-family: var(--font-display); font-size: 1.8rem; color: var(--accent); }
+    .hero-stats span { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+
+    /* ===== COMMON ===== */
+    section { padding: 5rem 0; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+    .section-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 3rem; gap: 1rem; flex-wrap: wrap; }
+    .section-header h2 { font-family: var(--font-display); font-size: clamp(1.8rem, 4vw, 2.8rem); line-height: 1.2; }
+    .section-header h2 span { color: var(--accent); font-style: italic; }
+    .section-label { font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.5rem; display: block; }
+
+    /* ===== LESSONS ===== */
+    .lesson-tabs { display: flex; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
+    .tab-btn {
+      padding: 0.5rem 1.25rem; font-size: 0.82rem; font-weight: 500; letter-spacing: 0.06em;
+      text-transform: uppercase; background: var(--surface); border: 1px solid var(--border);
+      color: var(--muted); border-radius: var(--radius); cursor: pointer;
+      transition: all var(--transition); font-family: var(--font-body);
+    }
+    .tab-btn.active, .tab-btn:hover { background: rgba(201,169,110,0.12); border-color: var(--accent); color: var(--accent); }
+    .lesson-info-box {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+      padding: 1.5rem; margin-bottom: 2rem; min-height: 80px; border-left: 3px solid var(--accent);
+    }
+    .lesson-info-box h3 { font-family: var(--font-display); font-size: 1.1rem; margin-bottom: 0.5rem; }
+    .lesson-info-box p { color: var(--muted); font-size: 0.9rem; }
+    .lessons-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+    .lesson-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 6px; overflow: hidden;
+      transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+    }
+    .lesson-card:hover { transform: translateY(-4px); border-color: rgba(201,169,110,0.3); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
+    .lesson-thumb { position: relative; aspect-ratio: 16/9; overflow: hidden; background: var(--surface2); }
+    .lesson-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
+    .lesson-card:hover .lesson-thumb img { transform: scale(1.04); }
+    .lesson-badge {
+      position: absolute; top: 0.75rem; left: 0.75rem; background: rgba(13,13,13,0.85);
+      backdrop-filter: blur(4px); color: var(--accent); font-size: 0.7rem; letter-spacing: 0.1em;
+      text-transform: uppercase; padding: 0.25rem 0.6rem; border-radius: 2px; border: 1px solid rgba(201,169,110,0.3);
+    }
+    /* Completed badge on lesson card */
+    .lesson-done-badge {
+      position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(109,184,122,0.2);
+      border: 1px solid var(--success); color: var(--success); font-size: 0.7rem; letter-spacing: 0.08em;
+      text-transform: uppercase; padding: 0.2rem 0.5rem; border-radius: 2px;
+    }
+    .lesson-body { padding: 1.25rem; }
+    .lesson-meta { display: flex; gap: 1rem; margin-bottom: 0.65rem; }
+    .lesson-meta span { font-size: 0.75rem; color: var(--muted); }
+    .lesson-body h3 { font-family: var(--font-display); font-size: 1.05rem; margin-bottom: 0.5rem; line-height: 1.3; }
+    .lesson-body p { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+    .lesson-expand-btn {
+      margin-top: 0.75rem; background: none; border: 1px solid var(--border);
+      color: var(--muted); padding: 0.4rem 0.75rem; border-radius: var(--radius);
+      font-size: 0.78rem; cursor: pointer; transition: all var(--transition); font-family: var(--font-body);
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .lesson-expand-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .lesson-full {
+      display: none; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border);
+      font-size: 0.82rem; color: var(--muted); line-height: 1.7;
+    }
+    .lesson-full.open { display: block; }
+    .lesson-footer { padding: 0.9rem 1.25rem; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .difficulty { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; }
+    .difficulty.easy { color: var(--success); }
+    .difficulty.medium { color: #e8c96e; }
+    .difficulty.hard { color: var(--error); }
+    /* Mark done button */
+    .mark-done-btn {
+      padding: 0.3rem 0.75rem; font-size: 0.75rem; border-radius: var(--radius);
+      cursor: pointer; transition: all var(--transition); font-family: var(--font-body);
+      font-weight: 500; letter-spacing: 0.04em; border: 1px solid var(--border);
+    }
+    .mark-done-btn.undone { background: none; color: var(--muted); }
+    .mark-done-btn.undone:hover { border-color: var(--success); color: var(--success); }
+    .mark-done-btn.done { background: rgba(109,184,122,0.15); border-color: var(--success); color: var(--success); }
+    .topics-article {
+      margin-top: 2rem; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 6px; padding: 2rem; display: flex; gap: 3rem; flex-wrap: wrap;
+    }
+    .topics-article h3 { font-family: var(--font-display); font-size: 1.3rem; margin-bottom: 1rem; }
+    .topics-list li {
+      padding: 0.45rem 0; border-bottom: 1px solid var(--border); font-size: 0.9rem;
+      color: var(--muted); display: flex; align-items: center; gap: 0.6rem; transition: color var(--transition);
+    }
+    .topics-list li:hover { color: var(--text); }
+
+    /* ===== GALLERY ===== */
+    #gallery { background: var(--surface); }
+    .filter-bar { display: flex; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap; align-items: center; }
+    .filter-btn {
+      padding: 0.4rem 1rem; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase;
+      background: none; border: 1px solid var(--border); color: var(--muted);
+      border-radius: var(--radius); cursor: pointer; transition: all var(--transition); font-family: var(--font-body);
+    }
+    .filter-btn.active, .filter-btn:hover { background: rgba(201,169,110,0.1); border-color: var(--accent); color: var(--accent); }
+    .filter-count { font-size: 0.78rem; color: var(--muted); margin-left: 0.5rem; }
+    .gallery-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+    .gallery-item { position: relative; aspect-ratio: 4/3; overflow: hidden; border-radius: 4px; background: var(--surface2); }
+    .gallery-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
+    .gallery-item:hover img { transform: scale(1.06); }
+    .gallery-overlay {
+      position: absolute; inset: 0; background: rgba(13,13,13,0.6);
+      display: flex; flex-direction: column; justify-content: flex-end; padding: 0.75rem;
+      opacity: 0; transition: opacity var(--transition);
+    }
+    .gallery-item:hover .gallery-overlay { opacity: 1; }
+    .gallery-author { font-size: 0.78rem; color: var(--text); }
+    .gallery-type { font-size: 0.7rem; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; }
+    .upload-controls { margin-top: 1.5rem; display: flex; align-items: center; gap: 1rem; }
+    .upload-zone {
+      margin-top: 1rem; padding: 2rem; background: var(--surface2); border: 1px dashed var(--border);
+      border-radius: 6px; text-align: center; display: none; transition: border-color var(--transition);
+    }
+    .upload-zone.visible { display: block; }
+    .upload-zone input[type="file"] { display: none; }
+
+    /* ===== PROGRESS ===== */
+    #progress { background: var(--bg); }
+    .progress-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .progress-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 1.5rem; }
+    .progress-card h3 { font-family: var(--font-display); font-size: 1rem; margin-bottom: 1.25rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; font-style: italic; }
+    .big-stat { font-family: var(--font-display); font-size: 4rem; color: var(--accent); line-height: 1; }
+    .big-stat-label { color: var(--muted); font-size: 0.85rem; margin-top: 0.4rem; }
+    .progress-bar-wrap { margin-top: 1.25rem; }
+    .progress-bar-label { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--muted); margin-bottom: 0.4rem; }
+    .progress-bar { height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 2px; }
+    .completed-list { display: flex; flex-direction: column; gap: 0.75rem; }
+    .completed-item { display: flex; align-items: center; gap: 1rem; padding: 0.85rem 1rem; background: var(--surface2); border-radius: 4px; border-left: 3px solid var(--border); }
+    .completed-item.done { border-left-color: var(--accent); }
+    .ci-status { font-size: 1rem; flex-shrink: 0; }
+    .ci-title { flex: 1; font-size: 0.9rem; }
+    .ci-date { font-size: 0.75rem; color: var(--muted); }
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 2rem; }
+    .stat-box { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 1.25rem; text-align: center; }
+    .stat-box strong { display: block; font-family: var(--font-display); font-size: 2rem; color: var(--accent); }
+    .stat-box span { font-size: 0.8rem; color: var(--muted); }
+
+    /* ===== COMMENTS ===== */
+    #comments { background: var(--surface); padding: 4rem 0; }
+    .comments-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; }
+    .comment-form h3 { font-family: var(--font-display); font-size: 1.4rem; margin-bottom: 1.5rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.4rem; }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); padding: 0.75rem 1rem; border-radius: var(--radius);
+      font-family: var(--font-body); font-size: 0.9rem; transition: border-color var(--transition); outline: none;
+    }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--accent); }
+    .form-group textarea { resize: vertical; min-height: 100px; }
+    .form-group select option { background: var(--surface2); }
+    .field-error { font-size: 0.75rem; color: var(--error); margin-top: 0.3rem; display: none; }
+    .field-error.show { display: block; }
+    .comment-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 1rem 1.25rem; margin-bottom: 0.75rem; animation: fadeUp 0.4s ease both; }
+    .comment-header { display: flex; justify-content: space-between; margin-bottom: 0.4rem; }
+    .comment-author { font-weight: 500; font-size: 0.9rem; color: var(--accent); }
+    .comment-email { font-size: 0.75rem; color: var(--muted); }
+    .comment-lesson { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
+    .comment-text { font-size: 0.88rem; color: var(--muted); line-height: 1.6; }
+
+    /* ===== FOOTER ===== */
+    footer { background: var(--surface); border-top: 1px solid var(--border); }
+    .footer-inner { max-width: 1200px; margin: 0 auto; padding: 3rem 2rem 2rem; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 2rem; }
+    .footer-brand .logo { font-size: 1.3rem; }
+    .footer-brand p { margin-top: 1rem; color: var(--muted); font-size: 0.85rem; line-height: 1.7; max-width: 280px; }
+    .footer-col h4 { font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+    .footer-col ul li { margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--muted); transition: color var(--transition); cursor: pointer; }
+    .footer-col ul li:hover { color: var(--accent); }
+    .contact-item { display: flex; gap: 0.6rem; font-size: 0.85rem; color: var(--muted); margin-bottom: 0.65rem; align-items: flex-start; }
+    .contact-item svg { flex-shrink: 0; margin-top: 2px; color: var(--accent); }
+    .footer-bottom { max-width: 1200px; margin: 0 auto; padding: 1.25rem 2rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
+    .footer-bottom p { font-size: 0.8rem; color: var(--muted); }
+
+    /* ===== PAGE TRANSITION ===== */
+    .page-enter { animation: fadeUp 0.45s ease both; }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ===== WHILE LIST ===== */
+    #while-lessons { margin-top: 2.5rem; }
+    #while-lessons h3 { font-family: var(--font-display); font-size: 1.3rem; margin-bottom: 1.25rem; }
+    .while-list { display: flex; flex-direction: column; gap: 0.5rem; }
+    .while-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; transition: border-color var(--transition); }
+    .while-item:hover { border-color: rgba(201,169,110,0.3); }
+    .while-num { font-family: var(--font-display); font-size: 1.1rem; color: var(--accent); min-width: 2rem; }
+    .while-title { flex: 1; font-size: 0.9rem; }
+    .while-dur { font-size: 0.78rem; color: var(--muted); }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 1024px) {
+      .lessons-grid { grid-template-columns: repeat(2, 1fr); }
+      .gallery-grid { grid-template-columns: repeat(3, 1fr); }
+      .progress-layout { grid-template-columns: 1fr; }
+      .comments-layout { grid-template-columns: 1fr; }
+      .footer-inner { grid-template-columns: 1fr 1fr; }
+      .hero-img-wrap { width: 50%; }
+    }
+    @media (max-width: 640px) {
+      .hamburger { display: flex; }
+      nav { position: absolute; top: 68px; left: 0; right: 0; background: rgba(13,13,13,0.98); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); display: none; }
+      nav.open { display: block; }
+      nav ul { flex-direction: column; padding: 1rem; gap: 0; }
+      nav ul li button { padding: 0.85rem 1rem; display: block; border-radius: 0; border-bottom: 1px solid var(--border); width: 100%; text-align: left; }
+      .hero { min-height: auto; padding: 2rem 0; }
+      .hero-img-wrap { display: none; }
+      .hero h1 { font-size: 2.2rem; }
+      .hero-stats { gap: 1.5rem; }
+      .hero-stats strong { font-size: 1.4rem; }
+      .hero-actions { flex-direction: column; }
+      .btn { justify-content: center; }
+      .lessons-grid { grid-template-columns: 1fr; }
+      .topics-article { flex-direction: column; gap: 1.5rem; }
+      .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .footer-inner { grid-template-columns: 1fr; }
+      .footer-bottom { justify-content: center; text-align: center; }
+      section { padding: 3.5rem 0; }
+      .section-header { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useCallback } = React;
+
+    /* ===================================================================
+       DATA
+    =================================================================== */
+    const LESSONS_DATA = [
+      { id: 1, module: 0, title: 'Трикутник експозиції', type: 'Відео', duration: '18 хв', difficulty: 'easy', diffLabel: 'Початківець', module_label: 'Модуль 1', img: 'https://images.unsplash.com/photo-1502982720700-bfff97f2ecac?w=600&q=80', desc: 'Витримка, діафрагма та ISO — як три параметри визначають результат знімка.', full: 'Детально розглядаємо кожен елемент трикутника: що таке витримка і як вона впливає на рух у кадрі, як діафрагма керує глибиною різкості, і чому ISO — це компроміс між світлом і шумом. Практичні вправи у режимі M.' },
+      { id: 2, module: 0, title: "Типи об'єктивів та їх використання", type: 'Відео', duration: '22 хв', difficulty: 'easy', diffLabel: 'Початківець', module_label: 'Модуль 1', img: 'https://images.unsplash.com/photo-1520390138845-fd2d229dd553?w=600&q=80', desc: "Прайм vs зум, кутові та телеоб'єктиви — який обрати для вашого жанру.", full: "Від широкого кута 14мм до телеоб'єктива 400мм. Розбираємо кожен фокусний діапазон, типові сценарії використання та як фокусна відстань впливає на перспективу і стиснення зображення." },
+      { id: 3, module: 1, title: 'Правило третин та золота спіраль', type: 'Відео', duration: '24 хв', difficulty: 'easy', diffLabel: 'Початківець', module_label: 'Модуль 2', img: 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=600&q=80', desc: 'Правило третин, золота спіраль та провідні лінії для ефектних знімків.', full: 'Вивчаємо класичні правила побудови кадру, які використовують найкращі фотографи світу. Після цього уроку ви навчитесь свідомо порушувати ці правила для досягнення художнього ефекту.' },
+      { id: 4, module: 2, title: 'Натуральне та штучне освітлення', type: 'Текст + Відео', duration: '31 хв', difficulty: 'medium', diffLabel: 'Середній', module_label: 'Модуль 3', img: 'https://images.unsplash.com/photo-1616400619175-5beda3a17896?w=600&q=80', desc: 'Золота година, блакитна година, студійне світло та портативні спалахи.', full: 'Як читати природне світло протягом дня. Що таке золота та блакитна година. Основні схеми студійного освітлення: Rembrandt, butterfly, split. Практичний гайд по роботі зі спалахом у режимі TTL.' },
+      { id: 5, module: 3, title: 'Lightroom: базова корекція', type: 'Відео', duration: '35 хв', difficulty: 'medium', diffLabel: 'Середній', module_label: 'Модуль 4', img: 'https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?w=600&q=80', desc: 'Кольорова корекція, тональний контраст та робота з масками.', full: 'Повний огляд панелі Basic у Lightroom. Робота з гістограмою, експозицією, світлами і тінями. Введення в HSL та криві тонів. Наприкінці уроку — створення власного пресету.' },
+      { id: 6, module: 3, title: 'Кольоровий грейдинг', type: 'Відео', duration: '28 хв', difficulty: 'hard', diffLabel: 'Просунутий', module_label: 'Модуль 4', img: 'https://images.unsplash.com/photo-1587145820266-a5951ee6f620?w=600&q=80', desc: 'Split-toning, кольорові схеми та кінематографічний стиль обробки.', full: 'Як досягнути кінематографічного look у своїх знімках. Детальна робота зі Color Grading у Lightroom та Camera Raw. Теорія кольору: комплементарні кольори, тріади, аналогові схеми.' },
+    ];
+
+    const MODULE_INFO = [
+      { title: 'Модуль 1: Основи фотографії', desc: 'Трикутник експозиції, типи камер, режими зйомки, фокусування. Ідеальний старт для початківців.' },
+      { title: 'Модуль 2: Композиція', desc: 'Правило третин, золота спіраль, провідні лінії, негативний простір та рамкування.' },
+      { title: 'Модуль 3: Освітлення', desc: 'Натуральне та студійне світло, золота година, схеми освітлення та робота зі спалахом.' },
+      { title: 'Модуль 4: Редагування', desc: 'Lightroom, Photoshop, Camera Raw — від базової корекції до кольорового грейдингу.' },
+    ];
+
+    const MODULE_PROGRESS_DATA = [
+      { label: 'Основи', pct: 100 },
+      { label: 'Композиція', pct: 80 },
+      { label: 'Редагування', pct: 45 },
+      { label: 'Портрет', pct: 20 },
+    ];
+
+    const INITIAL_GALLERY = [
+      { id: 1, type: 'landscape', author: 'Марія К.', img: 'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=600&q=80' },
+      { id: 2, type: 'portrait',  author: 'Олег Д.',  img: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600&q=80' },
+      { id: 3, type: 'street',    author: 'Тетяна Б.',img: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=600&q=80' },
+      { id: 4, type: 'landscape', author: 'Іван С.',  img: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80' },
+      { id: 5, type: 'portrait',  author: 'Юлія М.',  img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80' },
+      { id: 6, type: 'macro',     author: 'Дмитро Л.',img: 'https://images.unsplash.com/photo-1550159930-40066082a4fc?w=600&q=80' },
+      { id: 7, type: 'street',    author: 'Катерина Р.',img: 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=600&q=80' },
+      { id: 8, type: 'macro',     author: 'Андрій П.',img: 'https://images.unsplash.com/photo-1504194104404-433180773017?w=600&q=80' },
+    ];
+
+    const TYPE_LABELS = { portrait: 'Портрет', landscape: 'Пейзаж', macro: 'Макро', street: 'Вулиця' };
+    const ROUTES = { home: 'home', lessons: 'lessons', gallery: 'gallery', progress: 'progress', comments: 'comments' };
+
+    /* ===================================================================
+       ROUTER (custom hash-based, no external lib needed)
+    =================================================================== */
+    function useRouter() {
+      const [route, setRoute] = useState(() => {
+        const h = window.location.hash.replace('#', '') || 'home';
+        return ROUTES[h] ? h : 'home';
+      });
+
+      useEffect(() => {
+        const onHash = () => {
+          const h = window.location.hash.replace('#', '') || 'home';
+          setRoute(ROUTES[h] ? h : 'home');
+        };
+        window.addEventListener('hashchange', onHash);
+        return () => window.removeEventListener('hashchange', onHash);
+      }, []);
+
+      const navigate = useCallback((to) => {
+        window.location.hash = to;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, []);
+
+      return { route, navigate };
+    }
+
+    /* ===================================================================
+       GLOBAL STATE (lifted to App)
+    =================================================================== */
+    // completedLessons: Set of lesson ids user has marked done
+    // gallery: array of photo objects
+    // comments: array of comment objects
+    // photoCount: number of photos uploaded by user
+
+    /* ===================================================================
+       COMPONENTS
+    =================================================================== */
+
+    // ----- AppHeader -----
+    function AppHeader({ route, navigate }) {
+      const [navOpen, setNavOpen] = useState(false);
+      const links = [
+        { id: 'lessons',  label: 'Уроки',       desc: 'Відеоуроки та матеріали' },
+        { id: 'gallery',  label: 'Галерея',      desc: 'Роботи студентів' },
+        { id: 'progress', label: 'Мій прогрес',  desc: 'Ваша статистика' },
+        { id: 'comments', label: 'Коментарі',    desc: 'Залиште відгук' },
+      ];
+      return (
+        <header>
+          <div className="header-inner">
+            <span className="logo" onClick={() => { navigate('home'); setNavOpen(false); }}>
+              Фото<span>Майстер</span>
+            </span>
+            <button className="hamburger" onClick={() => setNavOpen(o => !o)} aria-label="Меню">
+              <span/><span/><span/>
+            </button>
+            <nav className={navOpen ? 'open' : ''}>
+              <ul>
+                {links.map(l => (
+                  <li key={l.id}>
+                    <button
+                      className={route === l.id ? 'active' : ''}
+                      onClick={() => { navigate(l.id); setNavOpen(false); }}
+                    >
+                      {l.label}
+                    </button>
+                  </li>
+                ))}
+                <li>
+                  <button className="nav-cta" onClick={() => { navigate('comments'); setNavOpen(false); }}>
+                    Почати навчання
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </header>
+      );
+    }
+
+    // ----- AppFooter -----
+    function AppFooter({ navigate }) {
+      return (
+        <footer>
+          <div className="footer-inner">
+            <div className="footer-brand">
+              <span className="logo" onClick={() => navigate('home')} style={{cursor:'pointer'}}>Фото<span>Майстер</span></span>
+              <p>Онлайн-платформа для тих, хто хоче навчитися фотографувати красиво — від перших кроків до впевненої майстерності.</p>
+            </div>
+            <div className="footer-col">
+              <h4>Платформа</h4>
+              <ul>
+                {['Уроки','Галерея','Мій прогрес','Спільнота'].map(t => <li key={t}>{t}</li>)}
+              </ul>
+            </div>
+            <div className="footer-col">
+              <h4>Курси</h4>
+              <ul>
+                {['Основи фотографії','Портретна зйомка','Пейзажна фотографія','Обробка у Lightroom'].map(t => <li key={t}>{t}</li>)}
+              </ul>
+            </div>
+            <div className="footer-col">
+              <h4>Контакти</h4>
+              <div className="contact-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                вул. С. Бандери, 22, Львів
+              </div>
+              <div className="contact-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.37a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                +38 (044) 123-45-67
+              </div>
+              <div className="contact-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                info@fotomaister.ua
+              </div>
+            </div>
+          </div>
+          <div className="footer-bottom">
+            <p>© 2026 ФотоМайстер. Усі права захищені.</p>
+            <p>Створено для студентів з ❤️ до фотографії</p>
+          </div>
+        </footer>
+      );
+    }
+
+    // ----- LessonCard component -----
+    function LessonCard({ lesson, index, isCompleted, onToggleComplete }) {
+      const [expanded, setExpanded] = useState(false);
+      const borderStyle = lesson.difficulty === 'hard'
+        ? 'rgba(232,124,110,0.2)' : lesson.difficulty === 'medium'
+        ? 'rgba(232,201,110,0.15)' : undefined;
+
+      return (
+        <article className="lesson-card" style={borderStyle ? {borderColor: borderStyle} : {}}>
+          <div className="lesson-thumb">
+            <img src={lesson.img} alt={lesson.title} loading="lazy" />
+            <span className="lesson-badge">{lesson.type} • {lesson.duration}</span>
+            {isCompleted && <span className="lesson-done-badge">✓ Пройдено</span>}
+          </div>
+          <div className="lesson-body" style={index % 2 !== 0 ? {background:'var(--surface2)'} : {}}>
+            <div className="lesson-meta">
+              <span>📷 {lesson.module_label}</span>
+              <span>⏱ {lesson.duration}</span>
+            </div>
+            <h3>{lesson.title}</h3>
+            <p>{lesson.desc}</p>
+            <button className="lesson-expand-btn" onClick={() => setExpanded(e => !e)}>
+              <span>{expanded ? '▾' : '▸'}</span>
+              <span>{expanded ? 'Приховати' : 'Детальніше'}</span>
+            </button>
+            <div className={`lesson-full${expanded ? ' open' : ''}`}>{lesson.full}</div>
+          </div>
+          <div className="lesson-footer">
+            <span className={`difficulty ${lesson.difficulty}`}>{lesson.diffLabel}</span>
+            <button
+              className={`mark-done-btn ${isCompleted ? 'done' : 'undone'}`}
+              onClick={() => onToggleComplete(lesson.id)}
+            >
+              {isCompleted ? '✓ Пройдено' : 'Відмітити'}
+            </button>
+          </div>
+        </article>
+      );
+    }
+
+    // ----- LessonsPage -----
+    function LessonsPage({ completedLessons, onToggleComplete }) {
+      const [activeModule, setActiveModule] = useState(0);
+
+      return (
+        <section id="lessons" className="page-enter">
+          <div className="container">
+            <div className="section-header">
+              <div>
+                <span className="section-label">Програма курсу</span>
+                <h2>Відео-<span>уроки</span></h2>
+              </div>
+            </div>
+
+            {/* MODULE TABS — for loop equivalent via .map() */}
+            <div className="lesson-tabs">
+              {MODULE_INFO.map((m, i) => (
+                <button
+                  key={i}
+                  className={`tab-btn${activeModule === i ? ' active' : ''}`}
+                  onClick={() => setActiveModule(i)}
+                >
+                  Модуль {i + 1}: {['Основи','Композиція','Освітлення','Редагування'][i]}
+                </button>
+              ))}
+            </div>
+
+            {/* Dynamic info box — state-driven DOM update */}
+            <div className="lesson-info-box">
+              <h3>{MODULE_INFO[activeModule].title}</h3>
+              <p>{MODULE_INFO[activeModule].desc}</p>
+            </div>
+
+            {/* LESSON CARDS — for loop rendered with .map() + conditional styling */}
+            <div className="lessons-grid">
+              {LESSONS_DATA.map((lesson, i) => (
+                <LessonCard
+                  key={lesson.id}
+                  lesson={lesson}
+                  index={i}
+                  isCompleted={completedLessons.has(lesson.id)}
+                  onToggleComplete={onToggleComplete}
+                />
+              ))}
+            </div>
+
+            {/* WHILE-LOOP LIST — rendered via .map() with index-based conditional */}
+            <div id="while-lessons">
+              <h3>Повний список уроків</h3>
+              <div className="while-list">
+                {LESSONS_DATA.map((lesson, i) => (
+                  <div
+                    key={lesson.id}
+                    className="while-item"
+                    style={completedLessons.has(lesson.id) ? {borderColor: 'rgba(109,184,122,0.25)'} : {}}
+                  >
+                    <span className="while-num">{i + 1}</span>
+                    <span className="while-title" style={!completedLessons.has(lesson.id) ? {color:'var(--muted)'} : {}}>
+                      {lesson.title}
+                    </span>
+                    {completedLessons.has(lesson.id)
+                      ? <span style={{color:'var(--success)', fontSize:'0.75rem'}}>✓ Пройдено</span>
+                      : <span style={{color:'var(--border)', fontSize:'0.75rem'}}>○ Очікує</span>
+                    }
+                    <span className="while-dur">{lesson.duration}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* TOPICS ARTICLE */}
+            <article className="topics-article">
+              <div>
+                <h3>Теми курсу</h3>
+                <ul className="topics-list">
+                  {['Основи фотографії та робота з камерою','Техніки зйомки в різних умовах освітлення','Композиція та художнє бачення','Портретна та пейзажна фотографія'].map((t, i) => (
+                    <li key={i} style={{color: i % 3 === 0 ? 'var(--text)' : i % 3 === 1 ? 'var(--muted)' : '#aaa'}}>{t}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h3>Програмне забезпечення</h3>
+                <ul className="topics-list">
+                  {['Adobe Lightroom Classic та CC','Adobe Photoshop для ретуші','Capture One Pro','Luminar Neo — AI-інструменти'].map((t, i) => (
+                    <li key={i} style={{color: i % 3 === 0 ? 'var(--text)' : i % 3 === 1 ? 'var(--muted)' : '#aaa'}}>{t}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h3>Формати</h3>
+                <ul className="topics-list">
+                  {['Відеоуроки з прикладами','Текстові матеріали та шпаргалки','Практичні завдання та проєкти','Зворотний зв\'язок від ментора'].map((t, i) => (
+                    <li key={i} style={{color: i % 3 === 0 ? 'var(--text)' : i % 3 === 1 ? 'var(--muted)' : '#aaa'}}>{t}</li>
+                  ))}
+                </ul>
+              </div>
+            </article>
+          </div>
+        </section>
+      );
+    }
+
+    // ----- GalleryItem component -----
+    function GalleryItem({ photo }) {
+      return (
+        <div className="gallery-item">
+          <img src={photo.img} alt={`${TYPE_LABELS[photo.type]} — ${photo.author}`} loading="lazy" />
+          <div className="gallery-overlay">
+            <span className="gallery-type">{TYPE_LABELS[photo.type]}</span>
+            <span className="gallery-author">{photo.author}</span>
+          </div>
+        </div>
+      );
+    }
+
+    // ----- GalleryPage -----
+    function GalleryPage({ gallery, setGallery, photoCount, setPhotoCount }) {
+      const [activeFilter, setActiveFilter] = useState('all');
+      const [uploadVisible, setUploadVisible] = useState(false);
+      const [uploadType, setUploadType] = useState('portrait');
+      const [uploadStatus, setUploadStatus] = useState('');
+
+      const filtered = activeFilter === 'all' ? gallery : gallery.filter(p => p.type === activeFilter);
+
+      function handleUpload() {
+        const placeholders = {
+          portrait: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600&q=80',
+          landscape: 'https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=600&q=80',
+          macro: 'https://images.unsplash.com/photo-1551963831-b3b1ca40c98e?w=600&q=80',
+          street: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=600&q=80',
+        };
+        const newPhoto = { id: Date.now(), type: uploadType, author: 'Ви', img: placeholders[uploadType] };
+        setGallery(g => [...g, newPhoto]);
+        setPhotoCount(c => c + 1);
+        setUploadVisible(false);
+        setUploadStatus(`✓ Фото типу "${TYPE_LABELS[uploadType]}" додано до галереї!`);
+        setTimeout(() => setUploadStatus(''), 3000);
+      }
+
+      return (
+        <section id="gallery" className="page-enter">
+          <div className="container">
+            <div className="section-header">
+              <div>
+                <span className="section-label">Роботи студентів</span>
+                <h2>Гале<span>рея</span></h2>
+              </div>
+            </div>
+
+            {/* Filter buttons */}
+            <div className="filter-bar">
+              {['all','portrait','landscape','macro','street'].map(f => (
+                <button
+                  key={f}
+                  className={`filter-btn${activeFilter === f ? ' active' : ''}`}
+                  onClick={() => setActiveFilter(f)}
+                >
+                  {f === 'all' ? 'Всі' : TYPE_LABELS[f]}
+                </button>
+              ))}
+              <span className="filter-count">{filtered.length} фото</span>
+            </div>
+
+            {/* Gallery grid */}
+            <div className="gallery-grid">
+              {filtered.map(photo => <GalleryItem key={photo.id} photo={photo} />)}
+            </div>
+
+            {/* Upload controls */}
+            <div className="upload-controls">
+              <button className="btn btn-outline btn-sm" onClick={() => setUploadVisible(v => !v)}>
+                📷 Завантажити фотографію
+              </button>
+              {uploadStatus && <span style={{fontSize:'0.82rem', color:'var(--success)'}}>{uploadStatus}</span>}
+            </div>
+
+            <div className={`upload-zone${uploadVisible ? ' visible' : ''}`}>
+              <p style={{marginBottom:'1rem'}}>Оберіть тип знімка для нової фотографії:</p>
+              <div style={{display:'flex', gap:'0.5rem', flexWrap:'wrap', justifyContent:'center', marginBottom:'1.2rem'}}>
+                {['portrait','landscape','macro','street'].map(t => (
+                  <button
+                    key={t}
+                    className={`filter-btn${uploadType === t ? ' active' : ''}`}
+                    onClick={() => setUploadType(t)}
+                  >
+                    {TYPE_LABELS[t]}
+                  </button>
+                ))}
+              </div>
+              <button className="btn btn-primary" onClick={handleUpload}>Додати до галереї</button>
+              <p style={{marginTop:'0.75rem', fontSize:'0.78rem'}}>
+                <strong>Оберіть тип</strong> та натисніть кнопку
+              </p>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    // ----- ProgressPage -----
+    function ProgressPage({ completedLessons, photoCount }) {
+      // Derive completed list from state
+      const completedList = LESSONS_DATA.map(l => ({
+        title: l.title,
+        done: completedLessons.has(l.id),
+        date: completedLessons.has(l.id) ? 'Пройдено' : '—',
+      }));
+      const completedCount = completedList.filter(c => c.done).length;
+      const pct = Math.round((completedCount / LESSONS_DATA.length) * 100);
+
+      return (
+        <section id="progress" className="page-enter">
+          <div className="container">
+            <div className="section-header">
+              <div>
+                <span className="section-label">Статистика навчання</span>
+                <h2>Мій <span>прогрес</span></h2>
+              </div>
+            </div>
+
+            <div className="progress-layout">
+              <div style={{display:'flex', flexDirection:'column', gap:'1rem'}}>
+                {/* Overall progress card */}
+                <div className="progress-card">
+                  <h3>Загальний прогрес</h3>
+                  <div className="big-stat">{pct}%</div>
+                  <p className="big-stat-label">курсу пройдено</p>
+                  <div className="progress-bar-wrap">
+                    <div className="progress-bar-label">
+                      <span>Прогрес</span>
+                      <span>{completedCount}/{LESSONS_DATA.length} уроків</span>
+                    </div>
+                    <div className="progress-bar">
+                      <div className="progress-fill" style={{width: `${pct}%`}}></div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Module progress card */}
+                <div className="progress-card">
+                  <h3>По модулях</h3>
+                  {MODULE_PROGRESS_DATA.map((m, i) => (
+                    <div className="progress-bar-wrap" key={i} style={i > 0 ? {marginTop:'1rem'} : {}}>
+                      <div className="progress-bar-label">
+                        <span>{m.label}</span><span>{m.pct}%</span>
+                      </div>
+                      <div className="progress-bar">
+                        <div className="progress-fill" style={{width:`${m.pct}%`}}></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Completed lessons card */}
+              <div className="progress-card">
+                <h3>Пройдені уроки</h3>
+                <div className="completed-list">
+                  {completedList.map((c, i) => (
+                    <div key={i} className={`completed-item${c.done ? ' done' : ''}`}>
+                      <span className="ci-status" style={!c.done ? {color:'var(--border)'} : {}}>
+                        {c.done ? '✓' : '○'}
+                      </span>
+                      <span className="ci-title" style={!c.done ? {color:'var(--muted)'} : {}}>{c.title}</span>
+                      <span className="ci-date">{c.date}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="stats-row">
+              <div className="stat-box"><strong>14</strong><span>Годин навчання</span></div>
+              <div className="stat-box"><strong>8</strong><span>Завдань здано</span></div>
+              <div className="stat-box"><strong>{photoCount}</strong><span>Фото завантажено</span></div>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    // ----- CommentsPage -----
+    function CommentsPage({ comments, setComments }) {
+      const [name, setName]       = useState('');
+      const [email, setEmail]     = useState('');
+      const [lesson, setLesson]   = useState('');
+      const [comment, setComment] = useState('');
+      const [errors, setErrors]   = useState({});
+
+      function validate() {
+        const errs = {};
+        if (!name.trim()) errs.name = true;
+        if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = true;
+        if (!comment.trim()) errs.comment = true;
+        return errs;
+      }
+
+      function handleSubmit() {
+        const errs = validate();
+        setErrors(errs);
+        if (Object.keys(errs).length > 0) return;
+
+        setComments(prev => [{
+          id: Date.now(), name, email, lesson, comment
+        }, ...prev]);
+        setName(''); setEmail(''); setLesson(''); setComment('');
+      }
+
+      return (
+        <section id="comments" className="page-enter">
+          <div className="container">
+            <div className="section-header">
+              <div>
+                <span className="section-label">Спільнота</span>
+                <h2>Коментарі та <span>відгуки</span></h2>
+              </div>
+            </div>
+
+            <div className="comments-layout">
+              {/* Comment form */}
+              <div className="comment-form">
+                <h3>Залишити коментар</h3>
+                <div className="form-group">
+                  <label>Ім'я *</label>
+                  <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Ваше ім'я" />
+                  {errors.name && <div className="field-error show">Будь ласка, введіть ім'я</div>}
+                </div>
+                <div className="form-group">
+                  <label>Email *</label>
+                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="your@email.com" />
+                  {errors.email && <div className="field-error show">Введіть коректний email</div>}
+                </div>
+                <div className="form-group">
+                  <label>Урок</label>
+                  <select value={lesson} onChange={e => setLesson(e.target.value)}>
+                    <option value="">— оберіть урок —</option>
+                    <option>Трикутник експозиції</option>
+                    <option>Типи об'єктивів</option>
+                    <option>Режими зйомки</option>
+                    <option>Правило третин</option>
+                    <option>Робота зі світлом</option>
+                    <option>Lightroom: базова корекція</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Коментар *</label>
+                  <textarea value={comment} onChange={e => setComment(e.target.value)} placeholder="Поділіться враженнями..." />
+                  {errors.comment && <div className="field-error show">Коментар не може бути порожнім</div>}
+                </div>
+                <button className="btn btn-primary" onClick={handleSubmit}>Надіслати коментар</button>
+              </div>
+
+              {/* Comments list */}
+              <div>
+                <h3 style={{fontFamily:'var(--font-display)', fontSize:'1.4rem', marginBottom:'1.5rem'}}>Коментарі студентів</h3>
+                {comments.length === 0
+                  ? <p style={{fontSize:'0.9rem', color:'var(--muted)', fontStyle:'italic'}}>Коментарів ще немає. Будьте першим!</p>
+                  : comments.map(c => (
+                    <div key={c.id} className="comment-item">
+                      <div className="comment-header">
+                        <span className="comment-author">{c.name}</span>
+                        <span className="comment-email">{c.email}</span>
+                      </div>
+                      {c.lesson && <div className="comment-lesson">Урок: {c.lesson}</div>}
+                      <p className="comment-text">{c.comment}</p>
+                    </div>
+                  ))
+                }
+              </div>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    // ----- HomePage -----
+    function HomePage({ navigate }) {
+      return (
+        <main>
+          <section className="hero page-enter">
+            <div className="hero-bg"></div>
+            <div className="hero-img-wrap">
+              <img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=1200&q=80" alt="Фотографія" />
+            </div>
+            <div className="hero-content container">
+              <span className="hero-tag">Онлайн-платформа для фотографів</span>
+              <h1>Опануй мистецтво<br /><em>фотографії</em></h1>
+              <p>Від основ до майстерності — структуровані відеоуроки, реальна практика та персональний трекер прогресу.</p>
+              <div className="hero-actions">
+                <button className="btn btn-primary" onClick={() => navigate('lessons')}>▶ Переглянути уроки</button>
+                <button className="btn btn-outline" onClick={() => navigate('progress')}>Мій прогрес</button>
+              </div>
+              <div className="hero-stats">
+                <div><strong>48</strong><span>Уроків</span></div>
+                <div><strong>12</strong><span>Модулів</span></div>
+                <div><strong>2.4k</strong><span>Студентів</span></div>
+              </div>
+            </div>
+          </section>
+        </main>
+      );
+    }
+
+    /* ===================================================================
+       APP (root component — manages global state + routing)
+    =================================================================== */
+    function App() {
+      const { route, navigate } = useRouter();
+
+      // Global state — lifted up and passed as props (state management)
+      const [completedLessons, setCompletedLessons] = useState(new Set());
+      const [gallery, setGallery] = useState(INITIAL_GALLERY);
+      const [comments, setComments] = useState([]);
+      const [photoCount, setPhotoCount] = useState(5);
+
+      // Toggle lesson completion — state update + side-effect
+      const handleToggleComplete = useCallback((id) => {
+        setCompletedLessons(prev => {
+          const next = new Set(prev);
+          if (next.has(id)) next.delete(id);
+          else next.add(id);
+          return next;
+        });
+      }, []);
+
+      // Routing — renders different page components without browser reload
+      function renderPage() {
+        switch (route) {
+          case 'lessons':
+            return <LessonsPage completedLessons={completedLessons} onToggleComplete={handleToggleComplete} />;
+          case 'gallery':
+            return <GalleryPage gallery={gallery} setGallery={setGallery} photoCount={photoCount} setPhotoCount={setPhotoCount} />;
+          case 'progress':
+            return <ProgressPage completedLessons={completedLessons} photoCount={photoCount} />;
+          case 'comments':
+            return <CommentsPage comments={comments} setComments={setComments} />;
+          default:
+            return <HomePage navigate={navigate} />;
+        }
+      }
+
+      return (
+        <>
+          <AppHeader route={route} navigate={navigate} />
+          <main>{renderPage()}</main>
+          <AppFooter navigate={navigate} />
+        </>
+      );
+    }
+
+    // ===== MOUNT =====
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
